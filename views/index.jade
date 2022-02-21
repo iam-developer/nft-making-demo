@@ -367,6 +367,7 @@ html
                     url: "/getting-ready",
                     type: 'GET',
                     dataType: 'json',
+                    timeout: 60000,
                     success: function(res) {
                         document.querySelector('.circle-container').classList.add('progess-50');
                         document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
@@ -382,6 +383,7 @@ html
                             url: "/preparing-metadata",
                             type: 'GET',
                             dataType: 'json',
+                            timeout: 60000,
                             success: function(res) {
                                 document.querySelector('.circle-container').classList.add('progess-75');
                                 document.querySelector('.circle-container').classList.remove('progess-50');
@@ -400,6 +402,7 @@ html
                                         url: `/minting?walletAddress=${walletAddress}`,
                                         type: 'GET',
                                         dataType: 'json',
+                                        timeout: 60000,
                                         success: function(res) {
                                             const { transactionHash } = res;
                                             console.log(`Meta deploy transactional hash for mint number-${i}`, transactionHash)
