@@ -9,8 +9,6 @@ const path = require("path");
 app.set("view engine","jade");
 
 app.get('/', function (req, res) {
-
-    console.log(" IWASHERE")
     res.render('index');
 });
 
@@ -55,7 +53,7 @@ app.get('/preparing-metadata', function (req, res){
 
 app.get('/getting-ready', function (req, res){
     console.log('Compiling...');
-    let response = spawnSync('ls', [], {shell: true})
+    let response = spawnSync('npx hardhat compile', [], {shell: true})
     if(response.error) {
         console.log("Error while compiling the code:", response.error);
         return res.status(500).send(JSON.parse('{"message":"Error Compiling The Code"}'));
