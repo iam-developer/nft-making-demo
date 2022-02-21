@@ -1,7 +1,7 @@
 /**
 * @type import('hardhat/config').HardhatUserConfig
 */
-console.log('Contact Address: ', process.env.contactAddress)
+
 require('dotenv').config();
 require("@nomiclabs/hardhat-ethers");
 require("./scripts/deploy.js");

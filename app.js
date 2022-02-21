@@ -53,7 +53,7 @@ app.get('/preparing-metadata', function (req, res){
 
 app.get('/getting-ready', function (req, res){
     console.log('Compiling...');
-    let response = spawnSync('npx hardhat compile', [], {shell: true})
+    let response = spawnSync('ls', [], {shell: true})
     if(response.error) {
         console.log("Error while compiling the code:", response.error);
         return res.status(500).send(JSON.parse('{"message":"Error Compiling The Code"}'));
@@ -78,6 +78,6 @@ app.get('/getting-ready', function (req, res){
 });
 
 var server = app.listen(process.env.PORT || 5000, function () {
-    console.log('Node server is running on port 3000..');
-    console.log('http://localhost:3000');
+    console.log('Node server is running on port 5000..');
+    console.log('http://localhost:5000');
 });
