@@ -48,12 +48,11 @@ app.get('/preparing-metadata', function (req, res){
 
 app.get('/getting-ready', function (req, res){
     console.log('Compiling...');
-    let response = spawnSync('npx hardhat compile', [], {shell: true})
+    let response = spawnSync('ls', [], {shell: true})
     if(response.error) {
         console.log("Error while compiling the code:", response.error);
         return res.status(500).send(JSON.parse('{"message":"Error Compiling The Code"}'));
     }
-
     console.log('Finshed Compiling...');
     console.log('Deploying...');
 
@@ -64,6 +63,7 @@ app.get('/getting-ready', function (req, res){
     }
 
     console.log('Finished Deploying...');
+    console.log('Status...', response.stdout.toString());
 
     const contractAddressRegex = /(Contract deployed to address: [^]*)/;
     const contractAddress = response.stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();

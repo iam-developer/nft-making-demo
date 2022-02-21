@@ -4,19 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./app"
+    "start": "nodemon node app.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@openzeppelin/contracts": "^4.5.0",
-    "dotenv": "^16.0.0",
-    "express": "^4.17.2",
-    "jade": "^1.11.0",
     "@nomiclabs/hardhat-ethers": "^2.0.5",
     "@nomiclabs/hardhat-etherscan": "^3.0.1",
+    "@openzeppelin/contracts": "^4.5.0",
+    "dotenv": "^16.0.0",
     "ethers": "^5.5.4",
+    "express": "^4.17.2",
     "hardhat": "^2.8.4",
-    "node-fetch": "^2.6.7"
+    "jade": "^1.11.0",
+    "node-fetch": "^2.6.7",
+    "nodemon": "^2.0.15"
   }
 }
