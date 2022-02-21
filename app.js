@@ -53,28 +53,34 @@ app.get('/preparing-metadata', function (req, res){
 
 app.get('/getting-ready', function (req, res){
     console.log('Compiling...');
-    let response = spawnSync('ls', [], {shell: true})
-    if(response.error) {
-        console.log("Error while compiling the code:", response.error);
-        return res.status(500).send(JSON.parse('{"message":"Error Compiling The Code"}'));
-    }
-    console.log('Finshed Compiling...');
-    console.log('Deploying...');
+    const exec = require('child_process').exec
+    exec('npx hardhat compile', (err, stdout, stderr) => {
+        console.log('Finshed Compiling...');
+        if (err) {
+            console.log("Error while compiling the code:", stderr);
+            return res.status(500).send(JSON.parse('{"message":"Error Compiling The Code"}'));
+        } else {
+            console.log(stdout.toString())
+            console.log('Deploying...');
 
-    response = spawnSync('npx hardhat deploy', [], {shell: true})
-    if(response.error) {
-        console.log("Error while deploying new contract: ", response.error);
-        return res.status(500).send(JSON.parse('{"message":"Error Deploying The Contract."}'));
-    }
+            exec('npx hardhat deploy', (err, stdout, stderr) => {
+                if (err) {
+                    console.log("Error while deploying new contract: ", stderr);
+                    return res.status(500).send(JSON.parse('{"message":"Error Deploying The Contract."}'));
+                } else {
+                    
+                    console.log('Finished Deploying...');
+                    console.log('Status...', stdout.toString());
 
-    console.log('Finished Deploying...');
-    console.log('Status...', response.stdout.toString());
-
-    const contractAddressRegex = /(Contract deployed to address: [^]*)/;
-    const contractAddress = response.stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();
-    const data = { message: "Successfuly deployed the contract...", contractAddress: contractAddress};
-    process.env.contactAddress = contractAddress;
-    res.status(200).send(JSON.parse(JSON.stringify(data)));
+                    const contractAddressRegex = /(Contract deployed to address: [^]*)/;
+                    const contractAddress = stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();
+                    const responseData = { message: "Successfuly deployed the contract...", contractAddress: contractAddress};
+                    process.env.contactAddress = contractAddress;
+                    res.status(200).send(JSON.parse(JSON.stringify(responseData)));
+                }
+            });
+        }
+    });
 });
 
 var server = app.listen(process.env.PORT || 5000, function () {
