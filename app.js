@@ -79,7 +79,7 @@ app.get('/getting-ready', function (req, res){
     res.status(200).send(JSON.parse(JSON.stringify(data)));
 });
 
-var server = app.listen(3000, function () {
+var server = app.listen(process.env.PORT || 5000, function () {
     console.log('Node server is running on port 3000..');
     console.log('http://localhost:3000');
 });
