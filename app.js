@@ -2,10 +2,17 @@ var express = require('express');
 const { spawnSync } = require('child_process');
 var app = express();
 const path = require("path");
+
+//TODO make public urls static for images
+
 //set view engine
 app.set("view engine","jade");
 
-//TODO make public urls static for images
+app.get('/', function (req, res) {
+
+    console.log(" IWASHERE")
+    res.render('index');
+});
 
 app.get('/minting', function (req, res){
     console.log('Initiating minting...')
@@ -70,11 +77,6 @@ app.get('/getting-ready', function (req, res){
     const data = { message: "Successfuly deployed the contract...", contractAddress: contractAddress};
     process.env.contactAddress = contractAddress;
     res.status(200).send(JSON.parse(JSON.stringify(data)));
-});
-
-
-app.get('/', function (req, res) {
-    res.render('index');
 });
 
 var server = app.listen(3000, function () {

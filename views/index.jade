@@ -272,6 +272,22 @@ html
                 height: 90%;
                 width: 50px;
             }
+
+            .animate {
+                animation: beat 0.8s infinite linear;
+            }
+
+            @keyframes beat {
+                0% {
+                    transform: scale(1);
+                }
+                100% {
+                    transform: scale(1.1);
+                }
+                0% {
+                    transform: scale(1);
+                }
+            }
     body
         div.progress-modal
             div.circle-container
@@ -319,6 +335,11 @@ html
                 document.querySelectorAll('.progess-container-circle')[1].classList.remove('successful');
                 document.querySelectorAll('.progess-container-circle')[2].classList.remove('successful');
                 document.querySelectorAll('.progess-container-circle')[3].classList.remove('successful');
+
+                document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
+                document.querySelectorAll('.progess-container-circle')[1].classList.remove('animate');
+                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
+                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
             }
 
             function closeModal() {
@@ -340,6 +361,7 @@ html
                 document.querySelector('#progess-status').innerText = 'Getting Started...';
                 document.querySelector('.close-modal').classList.add('disable-close');
                 document.querySelector('.close-modal').disabled = true;
+                document.querySelectorAll('.progess-container-circle')[0].classList.add('animate');
 
                 $.ajax({
                     url: "/getting-ready",
@@ -350,6 +372,9 @@ html
                         document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
                         document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
                         document.querySelector('#progess-status').innerText = 'Generating Metas...';
+
+                        document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
+                        document.querySelectorAll('.progess-container-circle')[2].classList.add('animate');
 
                         const { contractAddress } = res;
                         console.log('Contract deploy address', contractAddress)
@@ -362,6 +387,9 @@ html
                                 document.querySelector('.circle-container').classList.remove('progess-50');
                                 document.querySelectorAll('.progess-container-circle')[2].classList.add('successful');
                                 document.querySelector('#progess-status').innerText = "Minting NFT's...";
+
+                                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
+                                document.querySelectorAll('.progess-container-circle')[3].classList.add('animate');
 
                                 const { transactionHash } = res;
                                 let mintSuccess = true;
@@ -393,7 +421,8 @@ html
                                     //TODO MAKE THE BELOW IN A LOOP
                                     document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
                                 }
-
+                                
+                                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
                                 document.querySelector('.close-modal').classList.remove('disable-close');
                                 document.querySelector('.close-modal').disabled = false;
                             },
@@ -401,6 +430,8 @@ html
                                 //TODO MAKE THE BELOW IN A LOOP
                                 document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
                                 document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+
+                                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
 
                                 document.querySelector('#progess-status').innerText = `Unable to generate metas`;
                                 document.querySelector('.close-modal').classList.remove('disable-close');
@@ -415,6 +446,8 @@ html
                         document.querySelectorAll('.progess-container-circle')[1].classList.add('un-successful');
                         document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
                         document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+
+                        document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
 
                         document.querySelector('#progess-status').innerText = `Something went wrong...`;
                         document.querySelector('.close-modal').classList.remove('disable-close');
