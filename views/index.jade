@@ -1,0 +1,425 @@
+doctype html
+html
+    head
+        title Make Your NFT
+        style.
+            body {
+                margin: 0;
+            }
+
+            .nav-bar {
+                height: 80px;
+                width: 100%;
+                background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                color: white;
+                transition: all 0.3s;
+            }
+
+            .nav-bar > div {
+                display: flex;
+            }
+
+            .nav-buttons {
+                width: 100px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 10px;
+                transition: all 0.3s;
+                margin: 1rem;
+                border: 3px solid white;
+                outline: none;
+                width: 100px;
+                cursor: pointer;
+                height: 55px;
+            }
+
+            .wallet-connect {
+                background: #f2db00;
+            }
+
+            .twitter-connect {
+                background-image: linear-gradient( 315deg, #eec0c6 0%, #7ee8fa 74%);
+            }
+
+            .discord-connect {
+                background-image: linear-gradient( 315deg, #7f53ac 0%, #647dee 74%);
+            }
+
+            .nav-bar div, #nav_bar_items {
+                cursor: pointer;
+            }
+
+            .nav-buttons:hover , #nav_bar_items>li:hover {
+                transform: scale(1.1);
+            }
+
+            .nav-bar div:active , #nav_bar_items>li:active{
+                color: rgb(148,187,233);
+            }
+
+            .container {
+                background: transparent;
+                height: 600px;
+                width: 100%;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+                background: url(https://images.unsplash.com/photo-1643101810124-748118838131?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80) no-repeat fixed;
+                background-size: 100vw;
+            }
+
+            .footer {
+                height: 100px;
+                width: 100%;
+                background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+                color: white;
+            }
+
+            .wallet-address {
+                width: 340px;
+                text-align: end;
+                padding: 0.75rem 0.75rem 0.75rem 7.5rem;
+                border-radius: 10px;
+                outline: none;
+                border: none;
+                margin: 0 1rem;
+            }
+
+            .wallet-address-text {
+                position: absolute;
+                left: 6%;
+            }
+
+            .generate {
+                height: 40px;
+                width: 80px;
+                border-radius: 10px;
+                border: none;
+                outline: none;
+                background: white;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            .generate:hover {
+                background: #ffffffb0;
+            }
+
+            .generate:active {
+                box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+                background: #ffffffb0;
+            }
+
+            #wallet {
+                position: relative;
+                width: fit-content;
+                height: fit-content;
+                justify-content: center;
+                display: flex;
+                align-items: center;
+            }
+
+            #nft_number {
+                height: 40px;
+                padding: 0 0 0 1rem;
+            }
+
+            #nav_bar_items {
+                display: flex;
+                width: 40%;
+                justify-content: start;
+                align-items: center;
+                list-style: none;
+            }
+
+            #nav_bar_items > li {
+                padding: 0 1rem;
+                transition: all 0.3s;
+            }
+
+            .progress-modal {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                position: fixed;
+                height: 400px;
+                width: 800px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+                border-radius: 10px;
+                border: 3px solid white;
+                z-index: -1;
+                opacity: 0;
+                transition: all 0.3s;
+            }
+
+            .progess-container-circle {
+                height: 100px;
+                width: 100px;
+                background: grey;
+                margin: 2rem 0rem;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: white;
+                font-size: 2rem;
+                border: 3px solid white;
+                transition: all 0.3s;
+            }
+
+            .circle-container {
+                display: flex;
+                justify-content: space-around;
+                width: 100%;
+                position: relative;
+            }
+
+            .circle-container:before {
+                content: '';
+                position: absolute;
+                height: 4px;
+                width: 80%;
+                background: white;
+                top: 50%;
+                z-index: -1;
+            }
+
+            .circle-container:after {
+                content: '';
+                position: absolute;
+                height: 4px;
+                width: 0%;
+                transition: all 0.3s;
+                background: blue;
+                top: 50%;
+                left: 10%;
+                z-index: -1;
+            }
+
+            .successful {
+                background-image: linear-gradient( 315deg, #eec0c6 0%, #7ee8fa 74%);
+                border: 3px solid blue;
+                color: blue;
+            }
+
+            .un-successful {
+                background: #EA4C46;
+            }
+
+            .active {
+                z-index: 999;
+                opacity: 1;
+            }
+
+            .progess-25:after {
+                width: 20%;
+            }
+
+            .progess-50:after {
+                width: 40%;
+            }
+
+            .progess-75:after {
+                width: 60%;
+            }
+
+            .progess-100:after {
+                width: 80%;
+            }
+
+            #progess-status {
+                padding: 1rem 0;
+                text-align: center;
+                margin: 1rem 0;
+                color: white;
+                font-size: 2rem;
+            }
+
+            .close-modal {
+                height: 35px;
+                width: 80px;
+                color: white;
+                background: #32de84;
+                outline: none;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                margin: 1rem 0;
+                border: 2px solid white;
+            }
+
+            .disable-close {
+                background: grey;
+                cursor: not-allowed;
+            }
+
+            .close-modal:hover {
+                box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
+            }
+
+            .logo {
+                height: 90%;
+                width: 50px;
+            }
+    body
+        div.progress-modal
+            div.circle-container
+                div.progess-container-circle 1
+                div.progess-container-circle 2
+                div.progess-container-circle 3
+                div.progess-container-circle 4
+            div#progess-status You will see your progress here
+            button.close-modal(onclick="closeModal()") Close
+
+        div.nav-bar
+            ul#nav_bar_items
+                li
+                    a(href="/", target="_blank", style="color='white'")
+                        img.logo(src="https://play-lh.googleusercontent.com/fIjH7gfAvJh0Dt84IwDVS15UC6UvflcVYnmw-jJqAgk9ZHPF5q00pN8aIp4ekr98f1hM=s200")
+            div
+                button.nav-buttons.wallet-connect Connect wallet
+                a(href="https://twitter.com/home", target="_blank")
+                    button.nav-buttons.twitter-connect Twitter
+                a(href="https://discord.com/", target="_blank")
+                    button.nav-buttons.discord-connect Discord
+        div.container
+            div(onclick="myfun()").generate Generate
+            div#wallet
+                div.wallet-address-text Wallet Address
+                input(type="text", required=true, placeholder="0x155A4EDD43CEFEFa5E4D39a983B413DEd345b9e8")#walletAddress.wallet-address
+            input(type="number" id="nft_number" name="nft-number" min="1" max="3" value="1")
+        div#footer.footer
+        script(src="https://code.jquery.com/jquery-3.6.0.min.js")
+        script.
+            document.querySelector('.wallet-connect').disabled = false;
+
+            function resetModal() {
+                //Reset close modal button
+                document.querySelector('.close-modal').classList.remove('disable-close');
+                document.querySelector('.close-modal').disabled = false;
+
+                document.querySelector('#progess-status').innerText = 'Getting Started...';
+                document.querySelectorAll('.progess-container-circle')[0].classList.remove('un-successful');
+                document.querySelectorAll('.progess-container-circle')[1].classList.remove('un-successful');
+                document.querySelectorAll('.progess-container-circle')[2].classList.remove('un-successful');
+                document.querySelectorAll('.progess-container-circle')[3].classList.remove('un-successful');
+
+                document.querySelectorAll('.progess-container-circle')[0].classList.remove('successful');
+                document.querySelectorAll('.progess-container-circle')[1].classList.remove('successful');
+                document.querySelectorAll('.progess-container-circle')[2].classList.remove('successful');
+                document.querySelectorAll('.progess-container-circle')[3].classList.remove('successful');
+            }
+
+            function closeModal() {
+                document.querySelector('.progress-modal').classList.remove('active');
+            }
+
+            function myfun() {
+                const walletAddress = $('#walletAddress').val();
+                const nftNumber = parseInt($('#nft_number').val());
+
+                console.log('nftNumber', nftNumber)
+                if(!walletAddress){
+                    alert("Please enter valid wallet address")
+                    return
+                }
+
+                //reset css here
+                document.querySelector('.progress-modal').classList.add('active');
+                document.querySelector('#progess-status').innerText = 'Getting Started...';
+                document.querySelector('.close-modal').classList.add('disable-close');
+                document.querySelector('.close-modal').disabled = true;
+
+                $.ajax({
+                    url: "/getting-ready",
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(res) {
+                        document.querySelector('.circle-container').classList.add('progess-50');
+                        document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
+                        document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
+                        document.querySelector('#progess-status').innerText = 'Generating Metas...';
+
+                        const { contractAddress } = res;
+                        console.log('Contract deploy address', contractAddress)
+                        $.ajax({
+                            url: "/preparing-metadata",
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(res) {
+                                document.querySelector('.circle-container').classList.add('progess-75');
+                                document.querySelector('.circle-container').classList.remove('progess-50');
+                                document.querySelectorAll('.progess-container-circle')[2].classList.add('successful');
+                                document.querySelector('#progess-status').innerText = "Minting NFT's...";
+
+                                const { transactionHash } = res;
+                                let mintSuccess = true;
+                                console.log('Meta deploy transactional hash', transactionHash);
+                                for(let i=0; i<nftNumber; i++) {
+                                    document.querySelector('#progess-status').innerText = `Minting NFT number ${i+1}...`;
+                                    $.ajax({
+                                        url: `/minting?walletAddress=${walletAddress}`,
+                                        type: 'GET',
+                                        dataType: 'json',
+                                        success: function(res) {
+                                            const { transactionHash } = res;
+                                            console.log(`Meta deploy transactional hash for mint number-${i}`, transactionHash)
+                                        },
+                                        error: function(err) {
+                                            document.querySelector('#progess-status').innerText = `Unable to mint NFT number ${i+1}...`;
+                                            mintSuccess = false;
+                                            console.log("ERROR:", err)
+                                        }
+                                    });
+                                }
+                                if(mintSuccess) {
+                                    document.querySelector('.circle-container').classList.add('progess-100');
+                                    document.querySelector('.circle-container').classList.remove('progess-75');
+                                    document.querySelectorAll('.progess-container-circle')[3].classList.add('successful');
+                                    document.querySelector('#progess-status').innerText = `Successfuly minted NFT`;
+                                }
+                                else {
+                                    //TODO MAKE THE BELOW IN A LOOP
+                                    document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+                                }
+
+                                document.querySelector('.close-modal').classList.remove('disable-close');
+                                document.querySelector('.close-modal').disabled = false;
+                            },
+                            error: function(err) {
+                                //TODO MAKE THE BELOW IN A LOOP
+                                document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
+                                document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+
+                                document.querySelector('#progess-status').innerText = `Unable to generate metas`;
+                                document.querySelector('.close-modal').classList.remove('disable-close');
+                                document.querySelector('.close-modal').disabled = false;
+                                console.log("ERROR:", err)
+                            }
+                        });
+                    },
+                    error: function(err) {
+                        //TODO MAKE THE BELOW IN A LOOP
+                        document.querySelectorAll('.progess-container-circle')[0].classList.add('un-successful');
+                        document.querySelectorAll('.progess-container-circle')[1].classList.add('un-successful');
+                        document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
+                        document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+
+                        document.querySelector('#progess-status').innerText = `Something went wrong...`;
+                        document.querySelector('.close-modal').classList.remove('disable-close');
+                        document.querySelector('.close-modal').disabled = false;
+                        console.log("ERROR:", err)
+                    }
+                });
+            }
