@@ -32,7 +32,7 @@ io.on('connection', (socket)=>{
             console.log('Finshed Compiling...');
             if (err) {
                 console.log("Error while compiling the code:", stderr);
-                socket.emit('getStartedResponse', { message: '', error: err, body: {}});
+                socket.emit('getStartedResponse', { message: 'Error while compiling the code', error: true, body: {}});
             } else {
                 console.log(stdout.toString())
                 console.log('Deploying...');
@@ -40,7 +40,7 @@ io.on('connection', (socket)=>{
                 exec('npx hardhat deploy', (err, stdout, stderr) => {
                     if (err) {
                         console.log("Error while deploying new contract: ", stderr);
-                        socket.emit('getStartedResponse', { message: '', error: err, body: {}});
+                        socket.emit('getStartedResponse', { message: 'Error while deploying new contract', error: true, body: {}});
                     } else {
                         
                         console.log('Finished Deploying...');
@@ -50,7 +50,7 @@ io.on('connection', (socket)=>{
                         const contractAddress = stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();
                         process.env.contactAddress = contractAddress;
 
-                        socket.emit('getStartedResponse', { message: "Successfuly deployed the contract...", error: err, contractAddress: contractAddress });
+                        socket.emit('getStartedResponse', { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
                     }
                 });
             }
@@ -69,7 +69,7 @@ io.on('connection', (socket)=>{
         response = spawnSync(`npx hardhat set-base-token-uri --base-url "https://${metaCarAddress}.ipfs.dweb.link/metadata/"`, [], {shell: true})
         if(response.error) {
             console.log("Error while generating the metadata:", response.error);
-            socket.emit('preparingMetadataResponse', { message: 'Error while generating the metadata:', error: response.error, body: {}});
+            socket.emit('preparingMetadataResponse', { message: 'Error while generating the metadata', error: true, body: {}});
         }
 
         console.log('Deployed MetaCar...')
@@ -78,7 +78,7 @@ io.on('connection', (socket)=>{
         const metaAddressRegex = /(Transaction Hash: [^]*)/;
         const transactionHash = response.stdout.toString().match(metaAddressRegex)[1].split(":")[1].trim();
 
-        socket.emit('preparingMetadataResponse', { message: "Successfuly deployed the meta...", error: response.error, transactionHash: transactionHash});
+        socket.emit('preparingMetadataResponse', { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
     });
 
     socket.on('minting', (data)=>{

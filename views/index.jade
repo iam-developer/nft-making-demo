@@ -339,34 +339,61 @@ html
         script(src="/socket.io/socket.io.js")
         script.
             var socket=io()
+            var processCounter = 0;
             var progressStatus = $('#progess-status');
-            const closeModal = $('.close-modal');
+            var closeModal, firstCircle, secondCircle, thirdCircle, fourthCircle;
+            document.addEventListener("DOMContentLoaded", function(event) {
+                progressStatus = $('#progess-status');
+                closeModal = $('.close-modal');
+                firstCircle = document.querySelectorAll('.progess-container-circle')[0];
+                secondCircle = document.querySelectorAll('.progess-container-circle')[1];
+                thirdCircle = document.querySelectorAll('.progess-container-circle')[2];
+                fourthCircle = document.querySelectorAll('.progess-container-circle')[3];
+            });
+            
             // make connection with server from user side
             socket.on('connect', function(){
                 console.log('Connected to Server')
+                //- progressStatus.text('This may take couple of minutes...');
+                //- const isOldProcess = document.querySelector('.progress-modal').classList.value.includes('active');
+                //- if(isOldProcess) {
+                //-     switch(processCounter) {
+                //-         case 0:
+                //-             socket.emit('getStarted', {})
+                //-             break;
+                //-         case 1:
+                //-             // code block
+                //-             break;
+                //-         default:
+                //-             // code block
+                //-     }
+                //- }
             });
 
-            socket.on('getStartedResponse', function(response){
+            socket.on('getStartedResponse', function(response){ getStartedResponse(response)});
 
+            socket.on('preparingMetadataResponse', function(response){ preparingMetadataResponse(response) });
+
+            function getStartedResponse(response){
                 document.querySelector('.circle-container').classList.add('progess-50');
-                document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
-                document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
-                document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
-                document.querySelectorAll('.progess-container-circle')[2].classList.add('animate');
+                firstCircle.classList.add('successful');
+                secondCircle.classList.add('successful');
+                firstCircle.classList.remove('animate');
+                thirdCircle.classList.add('animate');
                 progressStatus.text('Generating Metas...');
 
                 socket.emit('preparingMetadata', {})
-            });
+            }
 
-            socket.on('preparingMetadataResponse', function(response){
+            function preparingMetadataResponse(response) {
                 const circleContainer = $('.circle-container');
                 circleContainer.toggleClass('progess-75');
                 circleContainer.toggleClass('progess-50');
-                document.querySelectorAll('.progess-container-circle')[2].classList.add('successful');
+                thirdCircle.classList.add('successful');
                 progressStatus.text("Minting NFT's...");
 
-                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
-                document.querySelectorAll('.progess-container-circle')[3].classList.add('animate');
+                thirdCircle.classList.remove('animate');
+                fourthCircle.classList.add('animate');
 
                 const { transactionHash } = response;
                 let mintSuccess = true;
@@ -380,7 +407,7 @@ html
                         walletAddress: walletAddress
                     });
                 }
-            });
+            }
 
             socket.on('mintingResponse', function(response){
                 const { error } = response;
@@ -389,14 +416,14 @@ html
                     $('.circle-container').toggleClass('progess-100');
                     $('.circle-container').toggleClass('progess-75');
                     progressStatus.text(`Successfuly minted NFT`);
-                    document.querySelectorAll('.progess-container-circle')[3].classList.add('successful');                    
+                    fourthCircle.classList.add('successful');                    
                 }
                 else {
                     //TODO MAKE THE BELOW IN A LOOP
-                    document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+                    fourthCircle.classList.add('un-successful');
                 }
                 
-                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
+                fourthCircle.classList.remove('animate');
                 closeModal.removeClass('disable-close');
                 closeModal.attr('disabled', false);
             })
@@ -411,7 +438,6 @@ html
             document.querySelector('.wallet-connect').disabled = false;
 
             function resetModal() {
-                //Reset close modal button
                 closeModal.removeClass('disable-close');
                 closeModal.attr('disabled', false);
                 $('.circle-container').removeClass('progess-25 progess-50 progess-75 progess-100');
@@ -424,6 +450,7 @@ html
             }
 
             function generateNft() {
+                //TODO add condition to check balance using npx hardhat check-balance
                 const walletAddress = $('#walletAddress').val();
                 if(!walletAddress){
                     alert("Please enter valid wallet address")
@@ -435,6 +462,10 @@ html
                 document.querySelector('#progess-status').innerText = 'Getting Started...';
                 document.querySelector('.close-modal').classList.add('disable-close');
                 document.querySelector('.close-modal').disabled = true;
-                document.querySelectorAll('.progess-container-circle')[0].classList.add('animate');
+                firstCircle.classList.add('animate');
                 socket.emit('getStarted', {})
+            }
+
+            function handleError() {
+                //Handle error here
             }
