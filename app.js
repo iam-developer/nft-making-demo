@@ -16,7 +16,10 @@ app.get('/', function (req, res) {
 const server = http.createServer(app)
 const io = socketIO(server, {
     allowUpgrades: false,
-    pingTimeout: 60000
+    pingTimeout: 600000,
+    upgradeTimeout: 30000,
+    maxHttpBufferSize: 100000000,
+    autoConnect: true
 });
 
 // make a connection with the user from server side
@@ -85,19 +88,19 @@ io.on('connection', (socket)=>{
             socket.emit('mintingResponse', { message: 'Error No wallet address provided:', error: true, body: {}});
         }
 
-        console.log('NFT minted...')
         // const userAddress = '0xb9720BE63Ea8896956A06d2dEd491De125fD705E';
         response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
         if(response.error) {
             console.log("Error while minting:", response.error);
             socket.emit('mintingResponse', { message: 'Error while minting the NFT:', error: true, body: {}});
         }
-
+        console.log('NFT minted...')
         socket.emit('mintingResponse', { message: 'Minted NFT successfuly', error: false, body: { response: 200 }});
     })
 
-    socket.on('disconnect', ()=>{
+    socket.on('disconnect', (reason)=>{
         console.log('disconnected from user');
+        console.log(reason)
     });
 });
 

@@ -383,8 +383,9 @@ html
             })
 
             // when disconnected from server
-            socket.on('disconnect', function(){
-                console.log('Disconnect from server')
+            socket.on('disconnect', function(reason){
+                console.log('Disconnect from server');
+                console.log(reason);
             });
 
         script.
@@ -394,7 +395,7 @@ html
                 //Reset close modal button
                 closeModal.removeClass('disable-close');
                 closeModal.attr('disabled', false);
-
+                $('.circle-container').removeClass('progess-25 progess-50 progess-75 progess-100');
                 progressStatus.text('Getting Started...');
                 $('.progess-container-circle').removeClass('un-successful successful animate');
             }
