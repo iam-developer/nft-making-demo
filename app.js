@@ -14,7 +14,10 @@ app.get('/', function (req, res) {
 //TODO make public urls static for images
 
 const server = http.createServer(app)
-const io = socketIO(server)
+const io = socketIO(server, {
+    allowUpgrades: false,
+    pingTimeout: 60000
+});
 
 // make a connection with the user from server side
 io.on('connection', (socket)=>{
