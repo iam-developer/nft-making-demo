@@ -296,7 +296,7 @@ html
                 div.progess-container-circle 3
                 div.progess-container-circle 4
             div#progess-status You will see your progress here
-            button.close-modal(onclick="closeModal()") Close
+            button.close-modal(onclick="closeProgessModal()") Close
 
         div.nav-bar
             ul#nav_bar_items
@@ -310,7 +310,7 @@ html
                 a(href="https://discord.com/", target="_blank")
                     button.nav-buttons.discord-connect Discord
         div.container
-            div(onclick="newfun()").generate Generate
+            div(onclick="generateNft()").generate Generate
             div#wallet
                 div.wallet-address-text Wallet Address
                 input(type="text", required=true, placeholder="0x155A4EDD43CEFEFa5E4D39a983B413DEd345b9e8")#walletAddress.wallet-address
@@ -320,6 +320,8 @@ html
         script(src="/socket.io/socket.io.js")
         script.
             var socket=io()
+            var progressStatus = $('#progess-status');
+            const closeModal = $('.close-modal');
             // make connection with server from user side
             socket.on('connect', function(){
                 console.log('Connected to Server')
@@ -330,50 +332,78 @@ html
                 document.querySelector('.circle-container').classList.add('progess-50');
                 document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
                 document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
-                document.querySelector('#progess-status').innerText = 'Generating Metas...';
-
                 document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
                 document.querySelectorAll('.progess-container-circle')[2].classList.add('animate');
-
-                const { contractAddress } = response;
+                progressStatus.text('Generating Metas...');
 
                 socket.emit('preparingMetadata', {})
             });
 
             socket.on('preparingMetadataResponse', function(response){
-                console.log(response)
+                const circleContainer = $('.circle-container');
+                circleContainer.toggleClass('progess-75');
+                circleContainer.toggleClass('progess-50');
+                document.querySelectorAll('.progess-container-circle')[2].classList.add('successful');
+                progressStatus.text("Minting NFT's...");
+
+                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
+                document.querySelectorAll('.progess-container-circle')[3].classList.add('animate');
+
+                const { transactionHash } = response;
+                let mintSuccess = true;
+                console.log('Meta deploy transactional hash', transactionHash);
+
+                const nftNumber = parseInt($('#nft_number').val());
+                const walletAddress = $('#walletAddress').val();
+
+                for(let i=0; i<nftNumber; i++) {
+                    socket.emit('minting', {
+                        walletAddress: walletAddress
+                    });
+                }
             });
+
+            socket.on('mintingResponse', function(response){
+                const { error } = response;
+                if(!error) {
+                    //add code for handling multiple minting nft take a total mint variable
+                    $('.circle-container').toggleClass('progess-100');
+                    $('.circle-container').toggleClass('progess-75');
+                    progressStatus.text(`Successfuly minted NFT`);
+                    document.querySelectorAll('.progess-container-circle')[3].classList.add('successful');                    
+                }
+                else {
+                    //TODO MAKE THE BELOW IN A LOOP
+                    document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
+                }
+                
+                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
+                closeModal.removeClass('disable-close');
+                closeModal.attr('disabled', false);
+            })
 
             // when disconnected from server
             socket.on('disconnect', function(){
                 console.log('Disconnect from server')
             });
+
         script.
             document.querySelector('.wallet-connect').disabled = false;
 
             function resetModal() {
                 //Reset close modal button
-                document.querySelector('.close-modal').classList.remove('disable-close');
-                document.querySelector('.close-modal').disabled = false;
+                closeModal.removeClass('disable-close');
+                closeModal.attr('disabled', false);
 
-                document.querySelector('#progess-status').innerText = 'Getting Started...';
-                
-                document.querySelectorAll('.progess-container-circle').forEach(function(ele){
-                    ele.classList.remove('un-successful');
-                    ele.classList.remove('successful');
-                    ele.classList.remove('animate');
-                })
+                progressStatus.text('Getting Started...');
+                $('.progess-container-circle').removeClass('un-successful successful animate');
             }
 
-            function closeModal() {
-                document.querySelector('.progress-modal').classList.remove('active');
+            function closeProgessModal() {
+                $('.progress-modal').removeClass('active');
             }
 
-            function newfun() {
-                const walletAddress = $('#walletAddress').val();
-                const nftNumber = parseInt($('#nft_number').val());
-
-                console.log('nftNumber', nftNumber)
+            function generateNft() {
                 if(!walletAddress){
                     alert("Please enter valid wallet address")
                     return
@@ -386,93 +416,4 @@ html
                 document.querySelector('.close-modal').disabled = true;
                 document.querySelectorAll('.progess-container-circle')[0].classList.add('animate');
                 socket.emit('getStarted', {})
-            }
-
-            function myfun() {
-                $.ajax({
-                    url: "/getting-ready",
-                    type: 'GET',
-                    dataType: 'json',
-                    timeout: 60000,
-                    success: function(res) {
-                        
-                        $.ajax({
-                            url: "/preparing-metadata",
-                            type: 'GET',
-                            dataType: 'json',
-                            timeout: 60000,
-                            success: function(res) {
-                                document.querySelector('.circle-container').classList.add('progess-75');
-                                document.querySelector('.circle-container').classList.remove('progess-50');
-                                document.querySelectorAll('.progess-container-circle')[2].classList.add('successful');
-                                document.querySelector('#progess-status').innerText = "Minting NFT's...";
-
-                                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
-                                document.querySelectorAll('.progess-container-circle')[3].classList.add('animate');
-
-                                const { transactionHash } = res;
-                                let mintSuccess = true;
-                                console.log('Meta deploy transactional hash', transactionHash);
-                                for(let i=0; i<nftNumber; i++) {
-                                    document.querySelector('#progess-status').innerText = `Minting NFT number ${i+1}...`;
-                                    $.ajax({
-                                        url: `/minting?walletAddress=${walletAddress}`,
-                                        type: 'GET',
-                                        dataType: 'json',
-                                        timeout: 60000,
-                                        success: function(res) {
-                                            const { transactionHash } = res;
-                                            console.log(`Meta deploy transactional hash for mint number-${i}`, transactionHash)
-                                        },
-                                        error: function(err) {
-                                            document.querySelector('#progess-status').innerText = `Unable to mint NFT number ${i+1}...`;
-                                            mintSuccess = false;
-                                            console.log("ERROR:", err)
-                                        }
-                                    });
-                                }
-                                if(mintSuccess) {
-                                    document.querySelector('.circle-container').classList.add('progess-100');
-                                    document.querySelector('.circle-container').classList.remove('progess-75');
-                                    document.querySelectorAll('.progess-container-circle')[3].classList.add('successful');
-                                    document.querySelector('#progess-status').innerText = `Successfuly minted NFT`;
-                                }
-                                else {
-                                    //TODO MAKE THE BELOW IN A LOOP
-                                    document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
-                                }
-                                
-                                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
-                                document.querySelector('.close-modal').classList.remove('disable-close');
-                                document.querySelector('.close-modal').disabled = false;
-                            },
-                            error: function(err) {
-                                //TODO MAKE THE BELOW IN A LOOP
-                                document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
-                                document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
-
-                                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
-
-                                document.querySelector('#progess-status').innerText = `Unable to generate metas`;
-                                document.querySelector('.close-modal').classList.remove('disable-close');
-                                document.querySelector('.close-modal').disabled = false;
-                                console.log("ERROR:", err)
-                            }
-                        });
-                    },
-                    error: function(err) {
-                        //TODO MAKE THE BELOW IN A LOOP
-                        document.querySelectorAll('.progess-container-circle')[0].classList.add('un-successful');
-                        document.querySelectorAll('.progess-container-circle')[1].classList.add('un-successful');
-                        document.querySelectorAll('.progess-container-circle')[2].classList.add('un-successful');
-                        document.querySelectorAll('.progess-container-circle')[3].classList.add('un-successful');
-
-                        document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
-
-                        document.querySelector('#progess-status').innerText = `Something went wrong...`;
-                        document.querySelector('.close-modal').classList.remove('disable-close');
-                        document.querySelector('.close-modal').disabled = false;
-                        console.log("ERROR:", err)
-                    }
-                });
             }

@@ -11,6 +11,7 @@ app.get('/', function (req, res) {
     res.render('index');
 });
 
+//TODO make public urls static for images
 
 const server = http.createServer(app)
 const io = socketIO(server)
@@ -73,32 +74,29 @@ io.on('connection', (socket)=>{
         socket.emit('preparingMetadataResponse', { message: "Successfuly deployed the meta...", error: response.error, transactionHash: transactionHash});
     });
 
+    socket.on('minting', (data)=>{
+        console.log('Initiating minting...')
+        const { walletAddress } = data;
+
+        if( !walletAddress ) {
+            socket.emit('mintingResponse', { message: 'Error No wallet address provided:', error: true, body: {}});
+        }
+
+        console.log('NFT minted...')
+        // const userAddress = '0xb9720BE63Ea8896956A06d2dEd491De125fD705E';
+        response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
+        if(response.error) {
+            console.log("Error while minting:", response.error);
+            socket.emit('mintingResponse', { message: 'Error while minting the NFT:', error: true, body: {}});
+        }
+
+        socket.emit('mintingResponse', { message: 'Minted NFT successfuly', error: false, body: { response: 200 }});
+    })
+
     socket.on('disconnect', ()=>{
         console.log('disconnected from user');
     });
 });
-
-// app.set("view engine","jade");
-
-//TODO make public urls static for images
-
-// server.get('/minting', function (req, res){
-//     console.log('Initiating minting...')
-//     const { walletAddress } = req.query;
-//     if( !walletAddress ) {
-//         return res.status(500).send(JSON.parse('{"message":"Error No wallet address provided"}'));
-//     }
-
-//     console.log('NFT minted...')
-//     // const userAddress = '0xb9720BE63Ea8896956A06d2dEd491De125fD705E';
-//     response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
-//     if(response.error) {
-//         console.log("Error while minting:", response.error);
-//         return res.status(500).send(JSON.parse('{"message":"Error while minting the NFT"}'));
-//     }
-//     res.status(200).send(JSON.parse('{"success":"Hey"}'));
-// });
-
 
 server.listen(process.env.PORT || 5000, function () {
     console.log('Node server is running on port 5000..');
