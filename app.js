@@ -15,6 +15,7 @@ app.get('/', function (req, res) {
 
 const server = http.createServer(app)
 const io = socketIO(server, {
+    transport: ['websocket'],
     allowUpgrades: false,
     pingTimeout: 600000,
     upgradeTimeout: 30000,

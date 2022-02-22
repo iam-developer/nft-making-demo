@@ -288,6 +288,24 @@ html
                     transform: scale(1);
                 }
             }
+
+            .logo {
+                height: 55px;
+                width: 55px;
+                border-radius: 10px;
+                background: radial-gradient(circle, #76030F 0%, #121B67 100%);
+                box-shadow: rgb(100 100 111 / 20%) 0px 7px 29px 0px;
+                font-family: sans-serif;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .logo > h3 {
+                margin: 0;
+            }
     body
         div.progress-modal
             div.circle-container
@@ -301,8 +319,9 @@ html
         div.nav-bar
             ul#nav_bar_items
                 li
-                    a(href="/", target="_blank", style="color='white'")
-                        img.logo(src="https://play-lh.googleusercontent.com/fIjH7gfAvJh0Dt84IwDVS15UC6UvflcVYnmw-jJqAgk9ZHPF5q00pN8aIp4ekr98f1hM=s200")
+                    div.logo
+                        h3 NFT
+                        span Maker
             div
                 button.nav-buttons.wallet-connect Connect wallet
                 a(href="https://twitter.com/home", target="_blank")
