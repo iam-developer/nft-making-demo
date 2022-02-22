@@ -310,13 +310,44 @@ html
                 a(href="https://discord.com/", target="_blank")
                     button.nav-buttons.discord-connect Discord
         div.container
-            div(onclick="myfun()").generate Generate
+            div(onclick="newfun()").generate Generate
             div#wallet
                 div.wallet-address-text Wallet Address
                 input(type="text", required=true, placeholder="0x155A4EDD43CEFEFa5E4D39a983B413DEd345b9e8")#walletAddress.wallet-address
             input(type="number" id="nft_number" name="nft-number" min="1" max="3" value="1")
         div#footer.footer
         script(src="https://code.jquery.com/jquery-3.6.0.min.js")
+        script(src="/socket.io/socket.io.js")
+        script.
+            var socket=io()
+            // make connection with server from user side
+            socket.on('connect', function(){
+                console.log('Connected to Server')
+            });
+
+            socket.on('getStartedResponse', function(response){
+
+                document.querySelector('.circle-container').classList.add('progess-50');
+                document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
+                document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
+                document.querySelector('#progess-status').innerText = 'Generating Metas...';
+
+                document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
+                document.querySelectorAll('.progess-container-circle')[2].classList.add('animate');
+
+                const { contractAddress } = response;
+
+                socket.emit('preparingMetadata', {})
+            });
+
+            socket.on('preparingMetadataResponse', function(response){
+                console.log(response)
+            });
+
+            // when disconnected from server
+            socket.on('disconnect', function(){
+                console.log('Disconnect from server')
+            });
         script.
             document.querySelector('.wallet-connect').disabled = false;
 
@@ -326,27 +357,19 @@ html
                 document.querySelector('.close-modal').disabled = false;
 
                 document.querySelector('#progess-status').innerText = 'Getting Started...';
-                document.querySelectorAll('.progess-container-circle')[0].classList.remove('un-successful');
-                document.querySelectorAll('.progess-container-circle')[1].classList.remove('un-successful');
-                document.querySelectorAll('.progess-container-circle')[2].classList.remove('un-successful');
-                document.querySelectorAll('.progess-container-circle')[3].classList.remove('un-successful');
-
-                document.querySelectorAll('.progess-container-circle')[0].classList.remove('successful');
-                document.querySelectorAll('.progess-container-circle')[1].classList.remove('successful');
-                document.querySelectorAll('.progess-container-circle')[2].classList.remove('successful');
-                document.querySelectorAll('.progess-container-circle')[3].classList.remove('successful');
-
-                document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
-                document.querySelectorAll('.progess-container-circle')[1].classList.remove('animate');
-                document.querySelectorAll('.progess-container-circle')[2].classList.remove('animate');
-                document.querySelectorAll('.progess-container-circle')[3].classList.remove('animate');
+                
+                document.querySelectorAll('.progess-container-circle').forEach(function(ele){
+                    ele.classList.remove('un-successful');
+                    ele.classList.remove('successful');
+                    ele.classList.remove('animate');
+                })
             }
 
             function closeModal() {
                 document.querySelector('.progress-modal').classList.remove('active');
             }
 
-            function myfun() {
+            function newfun() {
                 const walletAddress = $('#walletAddress').val();
                 const nftNumber = parseInt($('#nft_number').val());
 
@@ -356,29 +379,23 @@ html
                     return
                 }
 
-                //reset css here
+                resetModal(); //reseting the modal for new process
                 document.querySelector('.progress-modal').classList.add('active');
                 document.querySelector('#progess-status').innerText = 'Getting Started...';
                 document.querySelector('.close-modal').classList.add('disable-close');
                 document.querySelector('.close-modal').disabled = true;
                 document.querySelectorAll('.progess-container-circle')[0].classList.add('animate');
+                socket.emit('getStarted', {})
+            }
 
+            function myfun() {
                 $.ajax({
                     url: "/getting-ready",
                     type: 'GET',
                     dataType: 'json',
                     timeout: 60000,
                     success: function(res) {
-                        document.querySelector('.circle-container').classList.add('progess-50');
-                        document.querySelectorAll('.progess-container-circle')[0].classList.add('successful');
-                        document.querySelectorAll('.progess-container-circle')[1].classList.add('successful');
-                        document.querySelector('#progess-status').innerText = 'Generating Metas...';
-
-                        document.querySelectorAll('.progess-container-circle')[0].classList.remove('animate');
-                        document.querySelectorAll('.progess-container-circle')[2].classList.add('animate');
-
-                        const { contractAddress } = res;
-                        console.log('Contract deploy address', contractAddress)
+                        
                         $.ajax({
                             url: "/preparing-metadata",
                             type: 'GET',
