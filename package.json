@@ -18,7 +18,9 @@
     "hardhat": "^2.8.4",
     "jade": "^1.11.0",
     "node-fetch": "^2.6.7",
+    "node-localstorage": "^2.2.1",
     "nodemon": "^2.0.15",
-    "socket.io": "^4.4.1"
+    "socket.io": "^4.4.1",
+    "store2": "^2.13.1"
   }
 }

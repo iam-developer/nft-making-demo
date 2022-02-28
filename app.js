@@ -1,3 +1,4 @@
+const store = require("store2");
 const { spawnSync } = require('child_process');
 const socketIO = require('socket.io');
 const path = require("path");
@@ -5,6 +6,7 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const exec = require('child_process').exec
+// const localStorage = new LocalStorage('./scratch');
 
 app.set("view engine","jade");
 app.get('/', function (req, res) {
@@ -27,6 +29,9 @@ const io = socketIO(server, {
 io.on('connection', (socket)=>{
     console.log('New user connected');
     socket.on('getStarted', ()=>{
+        if(store('getStartedResponse')) {
+            return socket.emit('getStartedResponse', store('getStartedResponse'))
+        }
         console.log('Compiling...');
         exec('npx hardhat compile', (err, stdout, stderr) => {
             console.log('Finshed Compiling...');
@@ -40,6 +45,7 @@ io.on('connection', (socket)=>{
                 exec('npx hardhat deploy', (err, stdout, stderr) => {
                     if (err) {
                         console.log("Error while deploying new contract: ", stderr);
+                        store("getStartedResponse", { message: 'Error while deploying new contract', error: true, body: {}});
                         socket.emit('getStartedResponse', { message: 'Error while deploying new contract', error: true, body: {}});
                     } else {
                         
@@ -49,7 +55,9 @@ io.on('connection', (socket)=>{
                         const contractAddressRegex = /(Contract deployed to address: [^]*)/;
                         const contractAddress = stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();
                         process.env.contactAddress = contractAddress;
-
+                        // cache.set('completedStep', 1 , cache.defaultTTL)
+                        store("getStartedResponse", { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
+                        console.log("logging----------",store("getStartedResponse"));
                         socket.emit('getStartedResponse', { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
                     }
                 });
@@ -58,7 +66,9 @@ io.on('connection', (socket)=>{
     });
 
     socket.on('preparingMetadata', ()=>{
-
+        if(store('preparingMetadata')) {
+            return socket.emit('preparingMetadataResponse', store('preparingMetadata'))
+        }
         console.log('Preparing MetaCar...')
         // const { metaCarAddress } = req.query;
         // if( !metaCarAddress ) {
@@ -69,6 +79,7 @@ io.on('connection', (socket)=>{
         response = spawnSync(`npx hardhat set-base-token-uri --base-url "https://${metaCarAddress}.ipfs.dweb.link/metadata/"`, [], {shell: true})
         if(response.error) {
             console.log("Error while generating the metadata:", response.error);
+            store("preparingMetadata",{ message: 'Error while generating the metadata', error: true, body: {}});
             socket.emit('preparingMetadataResponse', { message: 'Error while generating the metadata', error: true, body: {}});
         }
 
@@ -77,11 +88,15 @@ io.on('connection', (socket)=>{
 
         const metaAddressRegex = /(Transaction Hash: [^]*)/;
         const transactionHash = response.stdout.toString().match(metaAddressRegex)[1].split(":")[1].trim();
-
+        store("preparingMetadata", { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
+        console.log("logging----------",store("preparingMetadata"));
         socket.emit('preparingMetadataResponse', { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
     });
 
     socket.on('minting', (data)=>{
+        if(store('mintingResponse')) {
+            return socket.emit('mintingResponse', store('mintingResponse'))
+        }
         console.log('Initiating minting...')
         const { walletAddress } = data;
 
@@ -93,9 +108,11 @@ io.on('connection', (socket)=>{
         response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
         if(response.error) {
             console.log("Error while minting:", response.error);
+            store("mintingResponse",{ message: 'Error while minting the NFT:', error: true, body: {}});
             socket.emit('mintingResponse', { message: 'Error while minting the NFT:', error: true, body: {}});
         }
         console.log('NFT minted...')
+        store.clear();
         socket.emit('mintingResponse', { message: 'Minted NFT successfuly', error: false, body: { response: 200 }});
     })
 

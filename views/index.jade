@@ -354,27 +354,35 @@ html
             // make connection with server from user side
             socket.on('connect', function(){
                 console.log('Connected to Server')
-                //- progressStatus.text('This may take couple of minutes...');
-                //- const isOldProcess = document.querySelector('.progress-modal').classList.value.includes('active');
-                //- if(isOldProcess) {
-                //-     switch(processCounter) {
-                //-         case 0:
-                //-             socket.emit('getStarted', {})
-                //-             break;
-                //-         case 1:
-                //-             // code block
-                //-             break;
-                //-         default:
-                //-             // code block
-                //-     }
-                //- }
+                progressStatus.text('This may take couple of minutes...');
+                const isOldProcess = document.querySelector('.progress-modal').classList.value.includes('active');
+                if(isOldProcess) {
+                    switch(processCounter) {
+                        case 0:
+                            console.log("case 0")
+                            generateNft()
+                            break;
+                       case 1:
+                            console.log("case 1")
+                            getStartedResponse()
+                            break;
+                        case 2:
+                            console.log("case 2")
+                            preparingMetadataResponse()
+                            break;
+                        default:
+                            // code block
+                    }
+                }
             });
 
-            socket.on('getStartedResponse', function(response){ getStartedResponse(response)});
+            socket.on('getStartedResponse', function(response){ processCounter=1; getStartedResponse(response)});
 
-            socket.on('preparingMetadataResponse', function(response){ preparingMetadataResponse(response) });
+            socket.on('preparingMetadataResponse', function(response){ processCounter=2; preparingMetadataResponse(response) });
 
-            function getStartedResponse(response){
+            socket.on('mintingResponse', function(response){ processCounter=3; mintingResponse(response); })
+
+            function getStartedResponse(response={}){
                 document.querySelector('.circle-container').classList.add('progess-50');
                 firstCircle.classList.add('successful');
                 secondCircle.classList.add('successful');
@@ -385,7 +393,7 @@ html
                 socket.emit('preparingMetadata', {})
             }
 
-            function preparingMetadataResponse(response) {
+            function preparingMetadataResponse(response={}) {
                 const circleContainer = $('.circle-container');
                 circleContainer.toggleClass('progess-75');
                 circleContainer.toggleClass('progess-50');
@@ -409,25 +417,24 @@ html
                 }
             }
 
-            socket.on('mintingResponse', function(response){
+            function mintingResponse(response={}){
                 const { error } = response;
                 if(!error) {
                     //add code for handling multiple minting nft take a total mint variable
                     $('.circle-container').toggleClass('progess-100');
                     $('.circle-container').toggleClass('progess-75');
                     progressStatus.text(`Successfuly minted NFT`);
-                    fourthCircle.classList.add('successful');                    
+                    fourthCircle.classList.add('successful');
                 }
                 else {
                     //TODO MAKE THE BELOW IN A LOOP
                     fourthCircle.classList.add('un-successful');
                 }
-                
+
                 fourthCircle.classList.remove('animate');
                 closeModal.removeClass('disable-close');
                 closeModal.attr('disabled', false);
-            })
-
+            }
             // when disconnected from server
             socket.on('disconnect', function(reason){
                 console.log('Disconnect from server');
