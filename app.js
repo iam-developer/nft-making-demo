@@ -28,10 +28,14 @@ const io = socketIO(server, {
 // make a connection with the user from server side
 io.on('connection', (socket)=>{
     console.log('New user connected');
-    socket.on('getStarted', ()=>{
-        if(store('getStartedResponse')) {
-            return socket.emit('getStartedResponse', store('getStartedResponse'))
+
+    socket.on('getStarted', (data)=>{
+        const { walletAddress } = data;
+
+        if(store(`${walletAddress}-getStartedResponse`)) {
+            return socket.emit('getStartedResponse', store(`${walletAddress}-getStartedResponse`))
         }
+
         console.log('Compiling...');
         exec('npx hardhat compile', (err, stdout, stderr) => {
             console.log('Finshed Compiling...');
@@ -45,7 +49,7 @@ io.on('connection', (socket)=>{
                 exec('npx hardhat deploy', (err, stdout, stderr) => {
                     if (err) {
                         console.log("Error while deploying new contract: ", stderr);
-                        store("getStartedResponse", { message: 'Error while deploying new contract', error: true, body: {}});
+                        store(`${walletAddress}-getStartedResponse`, { message: 'Error while deploying new contract', error: true, body: {}});
                         socket.emit('getStartedResponse', { message: 'Error while deploying new contract', error: true, body: {}});
                     } else {
                         
@@ -55,9 +59,9 @@ io.on('connection', (socket)=>{
                         const contractAddressRegex = /(Contract deployed to address: [^]*)/;
                         const contractAddress = stdout.toString().match(contractAddressRegex)[1].split(":")[1].trim();
                         process.env.contactAddress = contractAddress;
-                        // cache.set('completedStep', 1 , cache.defaultTTL)
-                        store("getStartedResponse", { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
-                        console.log("logging----------",store("getStartedResponse"));
+
+                        store(`${walletAddress}-getStartedResponse`, { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
+                        console.log("logging----------", store(`${walletAddress}-getStartedResponse`));
                         socket.emit('getStartedResponse', { message: "Successfuly deployed the contract...", error: false, contractAddress: contractAddress });
                     }
                 });
@@ -65,21 +69,26 @@ io.on('connection', (socket)=>{
         });
     });
 
-    socket.on('preparingMetadata', ()=>{
-        if(store('preparingMetadata')) {
-            return socket.emit('preparingMetadataResponse', store('preparingMetadata'))
+    socket.on('preparingMetadata', (data)=>{
+        const { walletAddress } = data;
+        const metaCarAddress = 'bafybeif6iuokmmcuwj7jgscybx3gvlcwkb6ybspwcduivl7mbqmgmmxubi'; //TODO make it dynamic this is responsible for meta images
+
+        if(store(`${walletAddress}-preparingMetadata`)) {
+            return socket.emit('preparingMetadataResponse', store(`${walletAddress}-preparingMetadata`))
         }
+
         console.log('Preparing MetaCar...')
+
         // const { metaCarAddress } = req.query;
         // if( !metaCarAddress ) {
         //     return res.status(500).send(JSON.parse('{"message":"Error No metaCar address provided"}'));
         // }
         // TODO Comment the following after generating the metacar address dynamically
-        const metaCarAddress = 'bafybeif6iuokmmcuwj7jgscybx3gvlcwkb6ybspwcduivl7mbqmgmmxubi'; //TODO make it dynamic
+
         response = spawnSync(`npx hardhat set-base-token-uri --base-url "https://${metaCarAddress}.ipfs.dweb.link/metadata/"`, [], {shell: true})
         if(response.error) {
             console.log("Error while generating the metadata:", response.error);
-            store("preparingMetadata",{ message: 'Error while generating the metadata', error: true, body: {}});
+            store(`${walletAddress}-preparingMetadata`,{ message: 'Error while generating the metadata', error: true, body: {}});
             socket.emit('preparingMetadataResponse', { message: 'Error while generating the metadata', error: true, body: {}});
         }
 
@@ -88,17 +97,22 @@ io.on('connection', (socket)=>{
 
         const metaAddressRegex = /(Transaction Hash: [^]*)/;
         const transactionHash = response.stdout.toString().match(metaAddressRegex)[1].split(":")[1].trim();
-        store("preparingMetadata", { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
+
+        store(`${walletAddress}-preparingMetadata`, { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
+
         console.log("logging----------",store("preparingMetadata"));
+
         socket.emit('preparingMetadataResponse', { message: "Successfuly deployed the meta...", error: false, transactionHash: transactionHash});
     });
 
     socket.on('minting', (data)=>{
-        if(store('mintingResponse')) {
-            return socket.emit('mintingResponse', store('mintingResponse'))
+        const { walletAddress, mintingId } = data;
+
+        if(store(`${walletAddress}-${mintingId}`)) {
+            return socket.emit('mintingResponse', store(`${walletAddress}-${mintingId}`))
         }
-        console.log('Initiating minting...')
-        const { walletAddress } = data;
+
+        console.log(`Initiating ${mintingId} minting...`)
 
         if( !walletAddress ) {
             socket.emit('mintingResponse', { message: 'Error No wallet address provided:', error: true, body: {}});
@@ -108,12 +122,14 @@ io.on('connection', (socket)=>{
         response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
         if(response.error) {
             console.log("Error while minting:", response.error);
-            store("mintingResponse",{ message: 'Error while minting the NFT:', error: true, body: {}});
-            socket.emit('mintingResponse', { message: 'Error while minting the NFT:', error: true, body: {}});
+            store(`${walletAddress}-${mintingId}` ,{ message: 'Error while minting the NFT:', error: true, body: {}, mintedId: mintingId});
+            socket.emit('mintingResponse', { message: 'Error while minting the NFT:', error: true, body: {}, mintedId: mintingId});
         }
-        console.log('NFT minted...')
-        store.clear();
-        socket.emit('mintingResponse', { message: 'Minted NFT successfuly', error: false, body: { response: 200 }});
+
+        console.log(`NFT ${ mintingId } minted...`)
+
+        store(`${walletAddress}-${mintingId}` , { message: 'Minted NFT successfuly', error: false, body: { response: 200 }, mintedId: mintingId});
+        socket.emit('mintingResponse', { message: 'Minted NFT successfuly', error: false, body: { response: 200 }, mintedId: mintingId});
     })
 
     socket.on('disconnect', (reason)=>{

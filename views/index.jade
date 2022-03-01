@@ -195,8 +195,7 @@ html
                 z-index: -1;
             }
 
-            .circle-container:after {
-                content: '';
+            .circle-container .updated-progres {
                 position: absolute;
                 height: 4px;
                 width: 0%;
@@ -220,22 +219,6 @@ html
             .active {
                 z-index: 999;
                 opacity: 1;
-            }
-
-            .progess-25:after {
-                width: 20%;
-            }
-
-            .progess-50:after {
-                width: 40%;
-            }
-
-            .progess-75:after {
-                width: 60%;
-            }
-
-            .progess-100:after {
-                width: 80%;
             }
 
             #progess-status {
@@ -309,6 +292,7 @@ html
     body
         div.progress-modal
             div.circle-container
+                div.updated-progres
                 div.progess-container-circle 1
                 div.progess-container-circle 2
                 div.progess-container-circle 3
@@ -338,11 +322,15 @@ html
         script(src="https://code.jquery.com/jquery-3.6.0.min.js")
         script(src="/socket.io/socket.io.js")
         script.
+            var progressBar = $('.circle-container .updated-progres');
             var socket=io()
             var processCounter = 0;
-            var progressStatus = $('#progess-status');
-            var closeModal, firstCircle, secondCircle, thirdCircle, fourthCircle;
+            var closeModal, firstCircle, secondCircle, thirdCircle, fourthCircle, progressStatus;
+            var mintIds = [];
+
             document.addEventListener("DOMContentLoaded", function(event) {
+
+                //Setting variable with element values
                 progressStatus = $('#progess-status');
                 closeModal = $('.close-modal');
                 firstCircle = document.querySelectorAll('.progess-container-circle')[0];
@@ -359,82 +347,48 @@ html
                 if(isOldProcess) {
                     switch(processCounter) {
                         case 0:
-                            console.log("case 0")
-                            generateNft()
+                            console.log("CASE 0");
+                            console.log('----------------Starting again generateNft----------------');
+                            generateNft();
                             break;
-                       case 1:
-                            console.log("case 1")
-                            getStartedResponse()
+                        case 1:
+                            console.log("CASE 1");
+                            console.log('----------------Starting again getStartedResponse----------------');
+                            getStartedResponse();
                             break;
                         case 2:
-                            console.log("case 2")
-                            preparingMetadataResponse()
+                            console.log("CASE 2");
+                            console.log('----------------Starting again minting generateNft----------------');
+                            const walletAddress = $('#walletAddress').val();
+
+                            for(let i = 0; i < mintIds.length; i++){
+                                socket.emit('minting', {
+                                    walletAddress: walletAddress,
+                                    mintingId: mintIds[i]
+                                });
+                            }
                             break;
                         default:
-                            // code block
+                            generateNft();
                     }
                 }
             });
 
-            socket.on('getStartedResponse', function(response){ processCounter=1; getStartedResponse(response)});
+            socket.on('getStartedResponse', function(response){
+                processCounter = 1;
+                getStartedResponse(response);
+            });
 
-            socket.on('preparingMetadataResponse', function(response){ processCounter=2; preparingMetadataResponse(response) });
+            socket.on('preparingMetadataResponse', function(response){
+                processCounter = 2;
+                preparingMetadataResponse(response);
+            });
 
-            socket.on('mintingResponse', function(response){ processCounter=3; mintingResponse(response); })
+            socket.on('mintingResponse', function(response){
+                processCounter = 3;
+                mintingResponse(response);
+            })
 
-            function getStartedResponse(response={}){
-                document.querySelector('.circle-container').classList.add('progess-50');
-                firstCircle.classList.add('successful');
-                secondCircle.classList.add('successful');
-                firstCircle.classList.remove('animate');
-                thirdCircle.classList.add('animate');
-                progressStatus.text('Generating Metas...');
-
-                socket.emit('preparingMetadata', {})
-            }
-
-            function preparingMetadataResponse(response={}) {
-                const circleContainer = $('.circle-container');
-                circleContainer.toggleClass('progess-75');
-                circleContainer.toggleClass('progess-50');
-                thirdCircle.classList.add('successful');
-                progressStatus.text("Minting NFT's...");
-
-                thirdCircle.classList.remove('animate');
-                fourthCircle.classList.add('animate');
-
-                const { transactionHash } = response;
-                let mintSuccess = true;
-                console.log('Meta deploy transactional hash', transactionHash);
-
-                const nftNumber = parseInt($('#nft_number').val());
-                const walletAddress = $('#walletAddress').val();
-
-                for(let i=0; i<nftNumber; i++) {
-                    socket.emit('minting', {
-                        walletAddress: walletAddress
-                    });
-                }
-            }
-
-            function mintingResponse(response={}){
-                const { error } = response;
-                if(!error) {
-                    //add code for handling multiple minting nft take a total mint variable
-                    $('.circle-container').toggleClass('progess-100');
-                    $('.circle-container').toggleClass('progess-75');
-                    progressStatus.text(`Successfuly minted NFT`);
-                    fourthCircle.classList.add('successful');
-                }
-                else {
-                    //TODO MAKE THE BELOW IN A LOOP
-                    fourthCircle.classList.add('un-successful');
-                }
-
-                fourthCircle.classList.remove('animate');
-                closeModal.removeClass('disable-close');
-                closeModal.attr('disabled', false);
-            }
             // when disconnected from server
             socket.on('disconnect', function(reason){
                 console.log('Disconnect from server');
@@ -443,18 +397,6 @@ html
 
         script.
             document.querySelector('.wallet-connect').disabled = false;
-
-            function resetModal() {
-                closeModal.removeClass('disable-close');
-                closeModal.attr('disabled', false);
-                $('.circle-container').removeClass('progess-25 progess-50 progess-75 progess-100');
-                progressStatus.text('Getting Started...');
-                $('.progess-container-circle').removeClass('un-successful successful animate');
-            }
-
-            function closeProgessModal() {
-                $('.progress-modal').removeClass('active');
-            }
 
             function generateNft() {
                 //TODO add condition to check balance using npx hardhat check-balance
@@ -465,14 +407,132 @@ html
                 }
 
                 resetModal(); //reseting the modal for new process
-                document.querySelector('.progress-modal').classList.add('active');
-                document.querySelector('#progess-status').innerText = 'Getting Started...';
-                document.querySelector('.close-modal').classList.add('disable-close');
-                document.querySelector('.close-modal').disabled = true;
-                firstCircle.classList.add('animate');
-                socket.emit('getStarted', {})
+                $('.progress-modal').addClass('active');
+                handleProgress(0, 'Getting Started...')
+                setCloseModal(true);
+                socket.emit('getStarted', { walletAddress: walletAddress })
             }
 
-            function handleError() {
-                //Handle error here
+            function getStartedResponse(response={}){
+                const walletAddress = $('#walletAddress').val();
+                const { error } = response;
+
+                if(error) {
+                    return handleError(0, response)
+                }
+
+                handleProgress(1, 'Generating Metas...')
+                socket.emit('preparingMetadata', { walletAddress: walletAddress })
+            }
+
+            function preparingMetadataResponse(response={}) {
+                const circleContainer = $('.circle-container');
+                const { error, transactionHash } = response;
+
+                if(error){
+                    return handleError(2, response)
+                }
+                
+                handleProgress(2, "Minting NFT's...");
+                console.log('Meta deploy transactional hash', transactionHash);
+
+                const nftNumber = parseInt($('#nft_number').val());
+                const walletAddress = $('#walletAddress').val();
+
+                for(let i=0; i<nftNumber; i++) {
+
+                    const mintingId = `minting-${i}`;
+                    console.log('Minting: ', mintingId);
+
+                    mintIds.push(mintingId);
+                    socket.emit('minting', {
+                        walletAddress: walletAddress,
+                        mintingId: mintingId
+                    });
+
+                    mintIds = [...new Set(mintIds)];
+                }
+            }
+
+            function mintingResponse(response={}){
+                const { error, mintedId, message } = response;
+                const walletAddress = $('#walletAddress').val();
+
+                if(!error) {
+                    //add code for handling multiple minting nft take a total mint variable
+                    mintIds = [...mintIds.filter(item => item !== mintedId)]
+                }
+                else {
+                    console.log('Something went wrong...Error Occured while minting:', mintedId);
+                    console.log('MESSAGE: ', message);
+                }
+
+                if(!mintIds.length) {
+                    handleProgress(3, `Successfuly minted NFT` );
+                    setCloseModal(false);
+                }
+            }
+
+            //-------------Modal Handling Methods-------------
+
+            function resetModal() {
+                setCloseModal(false)
+                progressBar.css('width', '0%');
+                progressStatus.text('Getting Started...');
+                $('.progess-container-circle').removeClass('un-successful successful animate');
+            }
+
+            function closeProgessModal() {
+                $('.progress-modal').removeClass('active');
+            }
+
+            function setCloseModal(Status) {
+                Status
+                ? closeModal.addClass('disable-close')
+                : closeModal.removeClass('disable-close')
+
+                closeModal.attr('disabled', Status);
+            }
+
+            //-------------Progress and Error Handling Methods-------------
+
+            function handleError(progressStep, res = {}) {
+                console.log('Error Occured');
+                const progressCirlce = document.querySelectorAll('.progess-container-circle');
+                resetModal();
+                progressCirlce.forEach((ele, index) => {
+                    if(index >= progressStep){
+                        ele.classList.add('un-successful')
+                    }
+                    else {
+                        ele.classList.add('successful')
+                    }
+                });
+
+                const { message } = res;
+                const outputText = message || 'Something Went Wrong...Please Try Again';
+                progressStatus.text(outputText);
+                setCloseModal(false);
+            }
+
+            function handleProgress(progressStep, progressText = '') {
+                console.log('Updating progress...');
+                const progressCirlce = document.querySelectorAll('.progess-container-circle');
+                resetModal();
+                setCloseModal(false);
+                progressCirlce.forEach((ele, index) => {
+                    if(index <= progressStep){
+                        ele.classList.add('successful')
+                    }
+                });
+
+                progressStep != 0 && progressBar.css('width', `${(progressStep+1)*20}%`);
+                progressStatus.text(progressText);
+
+                if(progressStep < 3) {
+                    progressCirlce[progressStep].classList.add('animate');
+                }
+                else {
+                    setCloseModal(false);
+                }
             }
