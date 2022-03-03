@@ -55,6 +55,7 @@ function handleProgress(progressStep, progressText = '') {
     progressStatus.text(progressText);
 
     if(progressStep < 3) {
+        setCloseModal(true);
         progressCirlce[progressStep].classList.add('animate');
     }
     else {
