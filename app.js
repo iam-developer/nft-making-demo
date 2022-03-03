@@ -6,14 +6,13 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const exec = require('child_process').exec
-// const localStorage = new LocalStorage('./scratch');
 
 app.set("view engine","jade");
 app.get('/', function (req, res) {
     res.render('index');
 });
 
-//TODO make public urls static for images
+app.use(express.static(path.join(__dirname, "public")))
 
 const server = http.createServer(app)
 const io = socketIO(server, {
@@ -79,12 +78,6 @@ io.on('connection', (socket)=>{
 
         console.log('Preparing MetaCar...')
 
-        // const { metaCarAddress } = req.query;
-        // if( !metaCarAddress ) {
-        //     return res.status(500).send(JSON.parse('{"message":"Error No metaCar address provided"}'));
-        // }
-        // TODO Comment the following after generating the metacar address dynamically
-
         response = spawnSync(`npx hardhat set-base-token-uri --base-url "https://${metaCarAddress}.ipfs.dweb.link/metadata/"`, [], {shell: true})
         if(response.error) {
             console.log("Error while generating the metadata:", response.error);
@@ -118,7 +111,6 @@ io.on('connection', (socket)=>{
             socket.emit('mintingResponse', { message: 'Error No wallet address provided:', error: true, body: {}});
         }
 
-        // const userAddress = '0xb9720BE63Ea8896956A06d2dEd491De125fD705E';
         response = spawnSync(`npx hardhat mint --address ${walletAddress}`, [], {shell: true})
         if(response.error) {
             console.log("Error while minting:", response.error);
